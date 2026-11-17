@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ParkingFlow — Smart Parking Slot Management System</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23fbbf24'><path d='M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C1.4 11.2 1 12 1 13v3c0 .6.4 1 1 1h2'/><circle cx='7' cy='17' r='2'/><path d='M9 17h6'/><circle cx='17' cy='17' r='2'/></svg>">
+  <style>
+    :root {
+      --bg-dark: #0b0f19;
+      --bg-card: #151c2c;
+      --bg-card-hover: #1e293b;
+      --border-color: #283548;
+      --border-light: rgba(255, 255, 255, 0.08);
+      --color-yellow: #fbbf24;
+      --color-yellow-hover: #f59e0b;
+      --color-blue: #3b82f6;
+      --color-emerald: #10b981;
+      --color-red: #ef4444;
+      --color-purple: #8b5cf6;
+      --text-main: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Container */
+    .container {
+      width: 100%;
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Navigation */
+    .navbar {
+      height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-color);
+      background: rgba(11, 15, 25, 0.85);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text-main);
+    }
+
+    .logo-badge {
+      width: 42px;
+      height: 42px;
+      background: var(--color-yellow);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #0f172a;
+      box-shadow: 0 4px 12px rgba(251, 191, 36, 0.35);
+    }
+
+    .brand-text h1 {
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+    }
+
+    .brand-text p {
+      font-size: 11px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--color-yellow);
+    }
+
+    .btn-launch {
+      background: var(--color-yellow);
+      color: #0f172a;
+      padding: 10px 22px;
+      border-radius: 999px;
+      font-size: 13.5px;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px rgba(251, 191, 36, 0.3);
+    }
+
+    .btn-launch:hover {
+      background: var(--color-yellow-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(251, 191, 36, 0.4);
+    }
+
+    /* Hero Section */
+    .hero-section {
+      padding: 80px 0 60px;
+      text-align: center;
+      position: relative;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(251, 191, 36, 0.12);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      color: var(--color-yellow);
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-size: 12.5px;
+      font-weight: 700;
+      margin-bottom: 24px;
+    }
+
+    .hero-title {
+      font-size: 52px;
+      font-weight: 900;
+      letter-spacing: -1.2px;
+      line-height: 1.15;
+      max-width: 960px;
+      margin: 0 auto 20px;
+      background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-subtitle {
+      font-size: 18px;
+      color: var(--text-secondary);
+      max-width: 760px;
+      margin: 0 auto 36px;
+      line-height: 1.6;
+    }
+
+    .hero-cta-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 50px;
+      flex-wrap: wrap;
+    }
+
+    .btn-hero-primary {
+      background: var(--color-yellow);
+      color: #0f172a;
+      padding: 14px 32px;
+      border-radius: 999px;
+      font-size: 15px;
+      font-weight: 800;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 6px 20px rgba(251, 191, 36, 0.35);
+      transition: all 0.2s ease;
+    }
+
+    .btn-hero-primary:hover {
+      background: var(--color-yellow-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(251, 191, 36, 0.45);
+    }
+
+    .btn-hero-secondary {
+      background: var(--bg-card);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 14px 28px;
+      border-radius: 999px;
+      font-size: 15px;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-hero-secondary:hover {
+      background: var(--bg-card-hover);
+      border-color: #3b82f6;
+    }
+
+    /* Hero Demo Mockup */
+    .mockup-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .mockup-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-light);
+      padding-bottom: 16px;
+      margin-bottom: 20px;
+    }
+
+    .window-dots {
+      display: flex;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    .dot.red { background: #ef4444; }
+    .dot.yellow { background: #fbbf24; }
+    .dot.green { background: #10b981; }
+
+    .mockup-stats-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .m-stat {
+      background: var(--bg-dark);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      text-align: left;
+    }
+
+    .m-stat-title {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .m-stat-val {
+      font-size: 22px;
+      font-weight: 800;
+      margin-top: 4px;
+    }
+
+    /* Live Preview Asphalt Grid Simulation */
+    .lot-grid-preview {
+      background: #0f172a;
+      border: 2px dashed #334155;
+      border-radius: var(--radius-md);
+      padding: 20px;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+    }
+
+    .preview-bay {
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid #475569;
+      border-radius: 8px;
+      padding: 10px 6px;
+      text-align: center;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .preview-bay.occupied {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+    }
+
+    .preview-bay.available {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(16, 185, 129, 0.4);
+      color: #6ee7b7;
+    }
+
+    .preview-bay.gate-in {
+      background: rgba(16, 185, 129, 0.25);
+      border-color: #10b981;
+      color: #34d399;
+    }
+
+    .preview-bay.gate-out {
+      background: rgba(239, 68, 68, 0.25);
+      border-color: #ef4444;
+      color: #f87171;
+    }
+
+    /* Section Headers */
+    .section-wrap {
+      padding: 90px 0;
+    }
+
+    .section-header {
+      text-align: center;
+      max-width: 720px;
+      margin: 0 auto 54px;
+    }
+
+    .section-tag {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--color-yellow);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+      display: inline-block;
+    }
+
+    .section-title {
+      font-size: 36px;
+      font-weight: 900;
+      letter-spacing: -0.8px;
+      margin-bottom: 16px;
+      line-height: 1.2;
+    }
+
+    .section-desc {
+      font-size: 16px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* Features Grid */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 28px 24px;
+      transition: all 0.25s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .feature-card:hover {
+      background: var(--bg-card-hover);
+      border-color: #3b82f6;
+      transform: translateY(-4px);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+    }
+
+    .f-icon-box {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 18px;
+    }
+
+    .f-icon-box.yellow { background: rgba(251, 191, 36, 0.15); color: var(--color-yellow); }
+    .f-icon-box.blue { background: rgba(59, 130, 246, 0.15); color: var(--color-blue); }
+    .f-icon-box.emerald { background: rgba(16, 185, 129, 0.15); color: var(--color-emerald); }
+    .f-icon-box.purple { background: rgba(139, 92, 246, 0.15); color: var(--color-purple); }
+    .f-icon-box.red { background: rgba(239, 68, 68, 0.15); color: var(--color-red); }
+
+    .feature-title {
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 10px;
+      color: var(--text-main);
+    }
+
+    .feature-desc {
+      font-size: 13.5px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 16px;
+      flex: 1;
+    }
+
+    .feature-dsa-tag {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--color-yellow);
+      background: rgba(251, 191, 36, 0.08);
+      border: 1px solid rgba(251, 191, 36, 0.2);
+      padding: 4px 10px;
+      border-radius: 999px;
+      display: inline-block;
+      align-self: flex-start;
+    }
+
+    /* DSA Curriculum Architecture Table */
+    .table-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      overflow-x: auto;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+
+    .dsa-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13.5px;
+    }
+
+    .dsa-table th {
+      background: rgba(30, 41, 59, 0.8);
+      color: var(--text-secondary);
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 11.5px;
+      letter-spacing: 0.5px;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .dsa-table td {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-light);
+      color: var(--text-main);
+    }
+
+    .dsa-table tr:hover td {
+      background: rgba(30, 41, 59, 0.4);
+    }
+
+    code {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--color-yellow);
+      padding: 3px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12.5px;
+    }
+
+    /* How it works steps */
+    .steps-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 30px;
+    }
+
+    .step-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 32px 24px;
+      position: relative;
+    }
+
+    .step-number {
+      font-size: 36px;
+      font-weight: 900;
+      color: var(--color-yellow);
+      margin-bottom: 14px;
+    }
+
+    .step-title {
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .step-desc {
+      font-size: 13.5px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* Footer CTA Banner */
+    .cta-banner {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 60px 40px;
+      text-align: center;
+      margin-bottom: 60px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    .cta-banner h2 {
+      font-size: 36px;
+      font-weight: 900;
+      margin-bottom: 16px;
+    }
+
+    .cta-banner p {
+      font-size: 16px;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto 30px;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border-color);
+      padding: 40px 0;
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    @media (max-width: 992px) {
+      .hero-title { font-size: 38px; }
+      .features-grid, .steps-row { grid-template-columns: 1fr; }
+      .mockup-stats-bar { grid-template-columns: repeat(2, 1fr); }
+      .lot-grid-preview { grid-template-columns: repeat(3, 1fr); }
+      .nav-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ======================================================================
+       HEADER / NAVBAR
+       ====================================================================== -->
+  <header class="navbar">
+    <div class="container" style="display: flex; align-items: center; justify-content: space-between;">
+      <a href="./index.html" class="brand-wrap">
+        <div class="logo-badge">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+            <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C1.4 11.2 1 12 1 13v3c0 .6.4 1 1 1h2a2 2 0 1 0 4 0h6a2 2 0 1 0 4 0z"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>ParkingFlow</h1>
+          <p>DSA-Powered Parking System</p>
+        </div>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#dsa-mapping">DSA Architecture</a></li>
+        <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="#viva-suite">Viva Ready</a></li>
+      </ul>
+
+      <a href="./index.html" class="btn-launch">
+        <span>Launch App</span>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+    </div>
+  </header>
+
+  <!-- ======================================================================
+       HERO SECTION
+       ====================================================================== -->
+  <section class="hero-section">
+    <div class="container">
+      <div class="hero-badge">
+        <span>⚡ Authoritative C++17 Core Engine + DSA Algorithms</span>
+      </div>
+
+      <h1 class="hero-title">
+        Smart Parking Slot Management & Path Navigation
+      </h1>
+
+      <p class="hero-subtitle">
+        An enterprise-grade, algorithmically optimized parking system that models facilities as graphs, computes BFS shortest-path routes, enforces dual priority waitlists, and provides interactive 2D layout design.
+      </p>
+
+      <div class="hero-cta-row">
+        <a href="./index.html" class="btn-hero-primary">
+          <span>🚀 Open Live Dashboard</span>
+        </a>
+        <a href="#features" class="btn-hero-secondary">
+          <span>Explore All Features ↓</span>
+        </a>
+      </div>
+
+      <!-- Live Interactive Mockup Card -->
+      <div class="mockup-card">
+        <div class="mockup-header">
+          <div class="window-dots">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
+          </div>
+          <span style="font-size: 12px; font-weight: 700; color: var(--text-secondary);">Demo Parking • Real-Time BFS Visualizer</span>
+          <span style="font-size: 11px; background: rgba(16,185,129,0.15); color: #34d399; padding: 2px 8px; border-radius: 999px; font-weight: 700;">● Active</span>
+        </div>
+
+        <div class="mockup-stats-bar">
+          <div class="m-stat">
+            <div class="m-stat-title">Total Capacity</div>
+            <div class="m-stat-val" style="color: #60a5fa;">24 Slots</div>
+          </div>
+          <div class="m-stat">
+            <div class="m-stat-title">Available Bays</div>
+            <div class="m-stat-val" style="color: #34d399;">19 Free</div>
+          </div>
+          <div class="m-stat">
+            <div class="m-stat-title">Occupancy Rate</div>
+            <div class="m-stat-val" style="color: #fbbf24;">21% Occupied</div>
+          </div>
+          <div class="m-stat">
+            <div class="m-stat-title">Queue Manager</div>
+            <div class="m-stat-val" style="color: #c084fc;">0 Waiting</div>
+          </div>
+        </div>
+
+        <div class="lot-grid-preview">
+          <div class="preview-bay gate-in"><span>⬇️ IN</span><span style="font-size: 9px;">Gate 1</span></div>
+          <div class="preview-bay occupied"><span>🚗 A2</span><span style="font-size: 9px;">DL01AB1234</span></div>
+          <div class="preview-bay available"><span>🚗 A3</span><span style="font-size: 9px;">2m BFS</span></div>
+          <div class="preview-bay available"><span>🚗 A4</span><span style="font-size: 9px;">3m BFS</span></div>
+          <div class="preview-bay available"><span>🚗 A5</span><span style="font-size: 9px;">4m BFS</span></div>
+          <div class="preview-bay gate-out"><span>⬆️ OUT</span><span style="font-size: 9px;">Gate 2</span></div>
+
+          <div class="preview-bay occupied"><span>🚗 B1</span><span style="font-size: 9px;">MH12CD5678</span></div>
+          <div class="preview-bay available"><span>🚗 B2</span><span style="font-size: 9px;">2m BFS</span></div>
+          <div class="preview-bay occupied"><span>🚗 B3</span><span style="font-size: 9px;">KA03EF9012</span></div>
+          <div class="preview-bay available"><span>🚗 B4</span><span style="font-size: 9px;">4m BFS</span></div>
+          <div class="preview-bay available"><span>🚗 B5</span><span style="font-size: 9px;">5m BFS</span></div>
+          <div class="preview-bay available"><span>🚗 B6</span><span style="font-size: 9px;">6m BFS</span></div>
+
+          <div class="preview-bay available"><span>🚗 C1</span><span style="font-size: 9px;">2m BFS</span></div>
+          <div class="preview-bay occupied"><span>🚗 C2</span><span style="font-size: 9px;">HR26GH3456</span></div>
+          <div class="preview-bay available"><span>🚗 C3</span><span style="font-size: 9px;">4m BFS</span></div>
+          <div class="preview-bay available"><span>🚗 C4</span><span style="font-size: 9px;">5m BFS</span></div>
+          <div class="preview-bay available"><span>🚗 C5</span><span style="font-size: 9px;">6m BFS</span></div>
+          <div class="preview-bay available"><span>🚗 C6</span><span style="font-size: 9px;">7m BFS</span></div>
+
+          <div class="preview-bay available"><span>🏍️ D1</span><span style="font-size: 9px;">Bike Slot</span></div>
+          <div class="preview-bay available"><span>🏍️ D2</span><span style="font-size: 9px;">Bike Slot</span></div>
+          <div class="preview-bay available"><span>🏍️ D3</span><span style="font-size: 9px;">Bike Slot</span></div>
+          <div class="preview-bay available"><span>🏍️ D4</span><span style="font-size: 9px;">Bike Slot</span></div>
+          <div class="preview-bay occupied"><span>🏍️ D5</span><span style="font-size: 9px;">UP16JK7890</span></div>
+          <div class="preview-bay available"><span>🏍️ D6</span><span style="font-size: 9px;">Bike Slot</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       FEATURES SECTION (ALL PROJECT FEATURES SHOWCASE)
+       ====================================================================== -->
+  <section class="section-wrap" id="features">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Complete System Capabilities</span>
+        <h2 class="section-title">Everything Needed to Run Smart Parking Facilities</h2>
+        <p class="section-desc">
+          Built from the ground up to demonstrate practical applications of Data Structures and Algorithms in modern transportation infrastructure.
+        </p>
+      </div>
+
+      <div class="features-grid">
+        <!-- Feature 1 -->
+        <div class="feature-card">
+          <div class="f-icon-box yellow">🗺️</div>
+          <h3 class="feature-title">2D Layout Designer & Painting</h3>
+          <p class="feature-desc">
+            Design parking facilities in Step 2 with custom dimensions. Paint car slots, two-wheeler bays, driving aisles, entrance & exit gates, and EV charging facilities with LIFO Stack multi-action Undo.
+          </p>
+          <span class="feature-dsa-tag">Matrix 2D + LIFO Stack O(1)</span>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="feature-card">
+          <div class="f-icon-box emerald">⚡</div>
+          <h3 class="feature-title">Greedy BFS Shortest-Path Routing</h3>
+          <p class="feature-desc">
+            Models plots as graph adjacency structures. BFS calculates shortest driving distances from Entrance gates to all compatible bays, greedily allocating optimal slots in real-time.
+          </p>
+          <span class="feature-dsa-tag">Graph BFS O(V + E)</span>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="feature-card">
+          <div class="f-icon-box blue">🏢</div>
+          <h3 class="feature-title">Multi-Plot Facility Management</h3>
+          <p class="feature-desc">
+            Create, edit, and configure multiple parking areas independently. Includes live tariff edits, grace period updates, and safe plot removal preventing accidental data loss when vehicles are parked.
+          </p>
+          <span class="feature-dsa-tag">Dynamic Vector Array + Hash Index</span>
+        </div>
+
+        <!-- Feature 4 -->
+        <div class="feature-card">
+          <div class="f-icon-box purple">🚨</div>
+          <h3 class="feature-title">Dual Waiting Queue Manager</h3>
+          <p class="feature-desc">
+            When capacity is full, vehicles enter a dual queue system. Emergency and VIP vehicles receive priority allocation, while regular drivers enqueue in a FIFO buffer with automatic checkout dequeue.
+          </p>
+          <span class="feature-dsa-tag">Priority Queue + FIFO Queue O(1)</span>
+        </div>
+
+        <!-- Feature 5 -->
+        <div class="feature-card">
+          <div class="f-icon-box red">🚗</div>
+          <h3 class="feature-title">Vehicle Check-In & Strict Validation</h3>
+          <p class="feature-desc">
+            Enforces a mandatory 10-digit mobile number and official vehicle registration plate verification (e.g. DL01AB1234). Prevents duplicate entry using instant Hash Table lookups.
+          </p>
+          <span class="feature-dsa-tag">Hash Table (unordered_map) O(1)</span>
+        </div>
+
+        <!-- Feature 6 -->
+        <div class="feature-card">
+          <div class="f-icon-box yellow">💰</div>
+          <h3 class="feature-title">Automated Billing & Grace Period</h3>
+          <p class="feature-desc">
+            Calculates parking duration and charges based on vehicle category (Car vs Two-Wheeler rates). Includes custom grace periods where short pick-up/drop-off visits are billed at zero cost.
+          </p>
+          <span class="feature-dsa-tag">Arithmetic Pricing Engine</span>
+        </div>
+
+        <!-- Feature 7 -->
+        <div class="feature-card">
+          <div class="f-icon-box emerald">🔔</div>
+          <h3 class="feature-title">Persistent Notification Bell Drawer</h3>
+          <p class="feature-desc">
+            All system events, check-ins, check-outs, errors, and edits are stored in a dedicated notification drawer with an unread badge counter, timestamps, status color coding, and a Clear All option.
+          </p>
+          <span class="feature-dsa-tag">Persistent Event Storage</span>
+        </div>
+
+        <!-- Feature 8 -->
+        <div class="feature-card">
+          <div class="f-icon-box blue">📅</div>
+          <h3 class="feature-title">Advance Slot Reservation</h3>
+          <p class="feature-desc">
+            Reserve parking slots ahead of time with scheduled arrival windows. Reserved bays are locked on the visual grid and guarded against double-booking by regular walk-in arrivals.
+          </p>
+          <span class="feature-dsa-tag">State-Flag Guarding O(1)</span>
+        </div>
+
+        <!-- Feature 9 -->
+        <div class="feature-card">
+          <div class="f-icon-box purple">📊</div>
+          <h3 class="feature-title">Audit Trail & Quicksort Analytics</h3>
+          <p class="feature-desc">
+            Maintains complete historical vehicle records in a Doubly Linked List. Allows instantaneous multi-attribute sorting by entry timestamp, license plate (BST), or parking fee via Quicksort.
+          </p>
+          <span class="feature-dsa-tag">Doubly Linked List + Quicksort O(n log n)</span>
+        </div>
+
+        <!-- Feature 10: Module 1 & 2 -->
+        <div class="feature-card">
+          <div class="f-icon-box blue">🚪</div>
+          <h3 class="feature-title">Admin Gate Configuration & Map Scale</h3>
+          <p class="feature-desc">
+            Full admin control over entrance, exit, and bidirectional gates with custom labels (Main Entrance, Gate 2, South Exit). Temporarily close or open routes, calibrate map scale in meters/cell, and run automated reachability validation.
+          </p>
+          <span class="feature-dsa-tag">Multi-Gate Graph Connectivity + Scale Metric</span>
+        </div>
+
+        <!-- Feature 11: Module 2 & 3 -->
+        <div class="feature-card">
+          <div class="f-icon-box emerald">🛣️</div>
+          <h3 class="feature-title">Calibrated Route Distance & Driving Time</h3>
+          <p class="feature-desc">
+            Accurately calculates traversable driving routes and distances in meters from configured entry gates to assigned bays. Computes realistic driving times at 15 km/h and warns administrators when bays are unreachable.
+          </p>
+          <span class="feature-dsa-tag">Shortest Path BFS / Dijkstra (Meters Calibration)</span>
+        </div>
+
+        <!-- Feature 12: Module 4, 5, 6, 8 -->
+        <div class="feature-card">
+          <div class="f-icon-box yellow">⚡</div>
+          <h3 class="feature-title">Smart EV Charging Facility & Allocation</h3>
+          <p class="feature-desc">
+            Differentiates EV vehicles requiring charging from standard vehicles. Allocates nearest operational EV charger (CCS2, Type-2), skips broken stations, enqueues in dedicated EV waitlists when full, and produces itemized checkout bills.
+          </p>
+          <span class="feature-dsa-tag">EV Station State Guarding + Multi-Tier Allocation</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       DSA CURRICULUM MAPPING SECTION (COLLEGE VIVA HIGHLIGHT)
+       ====================================================================== -->
+  <section class="section-wrap" id="dsa-mapping" style="background: rgba(15, 23, 42, 0.4);">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Engineering Viva Demonstration</span>
+        <h2 class="section-title">Data Structures & Algorithm Mapping</h2>
+        <p class="section-desc">
+          Every screen and feature directly maps to foundational computer science concepts implemented in C++17.
+        </p>
+      </div>
+
+      <div class="table-container">
+        <table class="dsa-table">
+          <thead>
+            <tr>
+              <th>Data Structure / Algorithm</th>
+              <th>Module & Project Usage</th>
+              <th>Average Time</th>
+              <th>Worst Case</th>
+              <th>Space Complexity</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>2D Array Matrix</strong></td>
+              <td>Parking layout representation & coordinate indexing (row, col)</td>
+              <td><code>O(1)</code> cell access</td>
+              <td><code>O(1)</code></td>
+              <td><code>O(R × C)</code></td>
+            </tr>
+            <tr>
+              <td><strong>Graph (Adjacency List) + BFS</strong></td>
+              <td>Shortest driving path from Entrance to bay; nearest slot allocation</td>
+              <td><code>O(V + E)</code></td>
+              <td><code>O(V + E)</code></td>
+              <td><code>O(V)</code></td>
+            </tr>
+            <tr>
+              <td><strong>Graph DFS</strong></td>
+              <td>Layout reachability verification & isolated cell detection</td>
+              <td><code>O(V + E)</code></td>
+              <td><code>O(V + E)</code></td>
+              <td><code>O(V)</code></td>
+            </tr>
+            <tr>
+              <td><strong>Hash Table (unordered_map)</strong></td>
+              <td>Instant active vehicle lookup & slot plate collision checks</td>
+              <td><code>O(1)</code></td>
+              <td><code>O(n)</code> (hash collision)</td>
+              <td><code>O(n)</code></td>
+            </tr>
+            <tr>
+              <td><strong>Binary Search Tree (BST)</strong></td>
+              <td>Vehicle plate storage & sorted in-order alphabetical traversal</td>
+              <td><code>O(log n)</code></td>
+              <td><code>O(n)</code> (skewed)</td>
+              <td><code>O(n)</code></td>
+            </tr>
+            <tr>
+              <td><strong>Dual Waiting Queues</strong></td>
+              <td>Full lot overflow manager: VIP Priority Queue + FIFO Regular Queue</td>
+              <td><code>O(1)</code> enqueue / dequeue</td>
+              <td><code>O(1)</code></td>
+              <td><code>O(k)</code></td>
+            </tr>
+            <tr>
+              <td><strong>LIFO Stack</strong></td>
+              <td>Layout Designer multi-action Undo stack</td>
+              <td><code>O(1)</code> push / pop</td>
+              <td><code>O(1)</code></td>
+              <td><code>O(m)</code></td>
+            </tr>
+            <tr>
+              <td><strong>Doubly Linked List</strong></td>
+              <td>Dynamic chronological vehicle session history and audit log</td>
+              <td><code>O(1)</code> prepend / append</td>
+              <td><code>O(1)</code></td>
+              <td><code>O(n)</code></td>
+            </tr>
+            <tr>
+              <td><strong>Quicksort</strong></td>
+              <td>Vehicle record sorting by arrival timestamp or generated revenue</td>
+              <td><code>O(n log n)</code></td>
+              <td><code>O(n²)</code></td>
+              <td><code>O(log n)</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       HOW IT WORKS SECTION
+       ====================================================================== -->
+  <section class="section-wrap" id="how-it-works">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Interactive Workflow</span>
+        <h2 class="section-title">How ParkingFlow Operates in 3 Simple Steps</h2>
+      </div>
+
+      <div class="steps-row">
+        <div class="step-box">
+          <div class="step-number">01</div>
+          <h3 class="step-title">Configure Parking Area</h3>
+          <p class="step-desc">
+            Create or select a plot. Customize grid dimensions, hourly pricing for Cars and Two-Wheelers, and paint Driving Aisles, Entry Gates, and Exit Gates.
+          </p>
+        </div>
+
+        <div class="step-box">
+          <div class="step-number">02</div>
+          <h3 class="step-title">Check-in with Shortest Route</h3>
+          <p class="step-desc">
+            Drivers check in with their plate and 10-digit mobile number. The system executes BFS shortest-path routing and immediately reserves the nearest compatible bay.
+          </p>
+        </div>
+
+        <div class="step-box">
+          <div class="step-number">03</div>
+          <h3 class="step-title">Automated Exit & Queue Promotion</h3>
+          <p class="step-desc">
+            Vehicle checks out with duration tracking and grace period calculation. The freed bay is automatically re-allocated to any driver waiting in the priority queue!
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       BOTTOM CTA BANNER
+       ====================================================================== -->
+  <section class="container" id="viva-suite">
+    <div class="cta-banner">
+      <h2>Ready to Explore ParkingFlow?</h2>
+      <p>
+        Launch the live application in your browser. Runs seamlessly both through the C++ Authoritative Backend and directly from files!
+      </p>
+      <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+        <a href="./index.html" class="btn-hero-primary">
+          <span>🚀 Launch ParkingFlow App</span>
+        </a>
+        <a href="http://localhost:8080" class="btn-hero-secondary">
+          <span>🌐 Open http://localhost:8080</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       FOOTER
+       ====================================================================== -->
+  <footer>
+    <div class="container">
+      <p><strong>ParkingFlow Smart Parking Slot Management System</strong> • Second-Year Engineering DSA Project</p>
+      <p style="margin-top: 6px; font-size: 12px; color: var(--text-muted);">
+        Powered by C++17 Core Engine, Graph BFS Algorithms, Dual Queues & Responsive Web Architecture
+      </p>
+    </div>
+  </footer>
+
+</body>
+</html>
